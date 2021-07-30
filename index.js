@@ -10,9 +10,9 @@ client.on('ready', () => {
 
 client.on('message', async (msg) => {
   if (msg.content.startsWith('!chart ')) {
-    try {
-      const [symbol] = msg.content.split(' ').splice(1)
+    const [symbol] = msg.content.split(' ').splice(1)
 
+    try {
       try {
         const imageStream = await getImageStream({ symbol, tries: 1 })
         const attachment = new MessageAttachment(imageStream)
@@ -24,7 +24,11 @@ client.on('message', async (msg) => {
         msg.channel.send(attachment)
       }
     } catch (e) {
-      msg.channel.send(e.message)
+      msg.channel.send(
+        `Chart could not be loaded for ${symbol}, please try later.`,
+      )
+
+      console.error(e)
     }
   }
 })
