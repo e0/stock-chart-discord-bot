@@ -15,31 +15,32 @@ const generateImage = async (symbol) => {
   await page.goto(genUrl, {
     waitUntil: 'networkidle0',
   })
+  const imageData = await page.evaluate(
+    'document.querySelector("img").getAttribute("src")',
+  )
   await page.close()
+
+  return convertToImageStream(imageData)
 }
 
-const getImageStream = async ({ symbol, tries }) => {
-  if (tries <= 0) {
-    return
-  }
-
+const getCachedImage = async (symbol) => {
   const imageDataUrl = `${process.env.STOCK_CHART_WORKER_URL}/images/${symbol}`
   const response = await fetch(imageDataUrl)
 
   if (response.status !== 200) {
-    if (response.status === 404 && tries > 1) {
-      // image hasn't been uploaded to Worker yet, wait 200ms and try again
-      await new Promise((resolve) => setTimeout(resolve, 500))
-      return await getImageStream({ symbol, tries: tries - 1 })
-    }
     throw new Error(
       `Chart could not be loaded for ${symbol}, please try later.`,
     )
   }
+
   const imageData = await response.text()
+  return convertToImageStream(imageData)
+}
+
+const convertToImageStream = (imageData) => {
   const image = imageData.split('base64,')[1]
   const imageStream = Buffer.alloc(image.length, image, 'base64')
   return imageStream
 }
 
-module.exports = { generateImage, getImageStream }
+module.exports = { generateImage, getCachedImage }

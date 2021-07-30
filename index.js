@@ -1,6 +1,6 @@
 require('dotenv').config()
 const { Client, MessageAttachment, MessageEmbed } = require('discord.js')
-const { generateImage, getImageStream } = require('./image')
+const { generateImage, getCachedImage } = require('./image')
 
 const client = new Client()
 
@@ -13,16 +13,16 @@ client.on('message', async (msg) => {
     const [symbol] = msg.content.split(' ').splice(1)
 
     try {
+      let imageStream
+
       try {
-        const imageStream = await getImageStream({ symbol, tries: 1 })
-        const attachment = new MessageAttachment(imageStream)
-        msg.channel.send(attachment)
+        imageStream = await getCachedImage(symbol)
       } catch {
-        await generateImage(symbol)
-        const imageStream = await getImageStream({ symbol, tries: 3 })
-        const attachment = new MessageAttachment(imageStream)
-        msg.channel.send(attachment)
+        imageStream = await generateImage(symbol)
       }
+
+      const attachment = new MessageAttachment(imageStream)
+      msg.channel.send(attachment)
     } catch (e) {
       msg.channel.send(
         `Chart could not be loaded for ${symbol}, please try later.`,
