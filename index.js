@@ -12,10 +12,17 @@ client.on('message', async (msg) => {
   if (msg.content.startsWith('!chart ')) {
     try {
       const [symbol] = msg.content.split(' ').splice(1)
-      await generateImage(symbol)
-      const imageStream = await getImageStream(symbol)
-      const attachment = new MessageAttachment(imageStream)
-      msg.channel.send(attachment)
+
+      try {
+        const imageStream = await getImageStream({ symbol, tries: 1 })
+        const attachment = new MessageAttachment(imageStream)
+        msg.channel.send(attachment)
+      } catch {
+        await generateImage(symbol)
+        const imageStream = await getImageStream({ symbol, tries: 3 })
+        const attachment = new MessageAttachment(imageStream)
+        msg.channel.send(attachment)
+      }
     } catch (e) {
       msg.channel.send(e.message)
     }
