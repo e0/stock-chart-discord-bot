@@ -1,14 +1,19 @@
 const fetch = require('node-fetch')
 const puppeteer = require('puppeteer')
 
+let browser
+
 const generateImage = async (symbol) => {
-  const browser = await puppeteer.launch()
+  if (!browser) {
+    browser = await puppeteer.launch()
+  }
+
   const page = await browser.newPage()
   const genUrl = `${process.env.STOCK_CHART_GENERATOR_URL}/chart/${symbol}`
   await page.goto(genUrl, {
     waitUntil: 'networkidle0',
   })
-  await browser.close()
+  await page.close()
 }
 
 const getImageStream = async ({ symbol, tries }) => {
