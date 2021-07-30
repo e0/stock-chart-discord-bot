@@ -21,8 +21,9 @@ client.on('message', async (msg) => {
         imageStream = await generateImage(symbol)
       }
 
+      const reply = `Here is the chart for ${symbol.toUpperCase()}.`
       const attachment = new MessageAttachment(imageStream)
-      msg.channel.send(attachment)
+      msg.channel.send(reply, attachment)
     } catch (e) {
       msg.channel.send(
         `Chart could not be loaded for ${symbol}, please try later.`,
