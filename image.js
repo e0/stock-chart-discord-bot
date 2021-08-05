@@ -3,7 +3,7 @@ const puppeteer = require('puppeteer')
 
 let browser
 
-const generateImage = async (symbol) => {
+const generateImage = async (symbol, timeframe) => {
   if (!browser) {
     browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -11,7 +11,10 @@ const generateImage = async (symbol) => {
   }
 
   const page = await browser.newPage()
-  const genUrl = `${process.env.STOCK_CHART_GENERATOR_URL}/chart/${symbol}`
+  let genUrl = `${process.env.STOCK_CHART_GENERATOR_URL}/chart/${symbol}`
+  if (timeframe) {
+    genUrl += `?timeframe=${timeframe}`
+  }
   await page.goto(genUrl, {
     waitUntil: 'networkidle0',
   })
@@ -23,8 +26,12 @@ const generateImage = async (symbol) => {
   return convertToImageStream(imageData)
 }
 
-const getCachedImage = async (symbol) => {
-  const imageDataUrl = `${process.env.STOCK_CHART_WORKER_URL}/images/${symbol}`
+const getCachedImage = async (symbol, timeframe) => {
+  let imageDataUrl = `${process.env.STOCK_CHART_WORKER_URL}/images/${symbol}`
+  if (timeframe) {
+    imageDataUrl += `/${timeframe}`
+  }
+
   const response = await fetch(imageDataUrl)
 
   if (response.status !== 200) {
