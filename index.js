@@ -11,7 +11,7 @@ client.on('ready', () => {
 client.on('message', async (msg) => {
   if (msg.content.startsWith('!chart ')) {
     const [command, symbol, ...args] = msg.content.split(' ')
-    let timeframe
+    let timeframe, dateString
 
     if (args.includes('-w') || args.includes('--weekly')) {
       timeframe = 'weekly'
@@ -21,13 +21,19 @@ client.on('message', async (msg) => {
       timeframe = 'monthly'
     }
 
+    if (args.includes('-d')) {
+      dateString = args[args.indexOf('-d') + 1]
+    } else if (args.includes('--date')) {
+      dateString = args[args.indexOf('--date') + 1]
+    }
+
     try {
       let imageStream
 
       try {
-        imageStream = await getCachedImage(symbol, timeframe)
+        imageStream = await getCachedImage(symbol, timeframe, dateString)
       } catch {
-        imageStream = await generateImage(symbol, timeframe)
+        imageStream = await generateImage(symbol, timeframe, dateString)
       }
 
       const reply = `Here is the ${

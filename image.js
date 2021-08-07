@@ -3,7 +3,7 @@ const puppeteer = require('puppeteer')
 
 let browser
 
-const generateImage = async (symbol, timeframe) => {
+const generateImage = async (symbol, timeframe, dateString) => {
   if (!browser) {
     browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -15,6 +15,11 @@ const generateImage = async (symbol, timeframe) => {
   if (timeframe) {
     genUrl += `?timeframe=${timeframe}`
   }
+  if (dateString) {
+    const s = timeframe ? '&' : '?'
+    genUrl += `${s}date=${dateString}`
+  }
+
   await page.goto(genUrl, {
     waitUntil: 'networkidle0',
   })
@@ -26,11 +31,10 @@ const generateImage = async (symbol, timeframe) => {
   return convertToImageStream(imageData)
 }
 
-const getCachedImage = async (symbol, timeframe) => {
+const getCachedImage = async (symbol, timeframe, dateString) => {
   let imageDataUrl = `${process.env.STOCK_CHART_WORKER_URL}/images/${symbol}`
-  if (timeframe) {
-    imageDataUrl += `/${timeframe}`
-  }
+  imageDataUrl += `/${timeframe || 'daily'}`
+  imageDataUrl += `/${dateString || new Date().toISOString().slice(0, 10)}`
 
   const response = await fetch(imageDataUrl)
 
