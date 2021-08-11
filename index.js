@@ -21,6 +21,10 @@ client.on('message', async (msg) => {
       timeframe = 'monthly'
     }
 
+    if (args.includes('-h') || args.includes('--hourly')) {
+      timeframe = 'hourly'
+    }
+
     if (args.includes('-d')) {
       dateString = args[args.indexOf('-d') + 1]
     } else if (args.includes('--date')) {
