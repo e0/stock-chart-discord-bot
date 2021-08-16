@@ -1,14 +1,21 @@
 require('dotenv').config()
-const { Client, MessageAttachment, MessageEmbed } = require('discord.js')
+const {
+  Client,
+  Intents,
+  MessageAttachment,
+  MessageEmbed,
+} = require('discord.js')
 const { generateImage, getCachedImage } = require('./image')
 
-const client = new Client()
+const client = new Client({
+  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
+})
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
 })
 
-client.on('message', async (msg) => {
+client.on('messageCreate', async (msg) => {
   if (msg.content.startsWith('!chart ')) {
     const [command, symbol, ...args] = msg.content.split(' ')
     let timeframe, dateString
@@ -54,11 +61,8 @@ client.on('message', async (msg) => {
         imageStream = await generateImage(symbol, timeframe, dateString)
       }
 
-      const reply = `Here is the ${
-        timeframe || 'daily'
-      } chart for ${symbol.toUpperCase()}.`
       const attachment = new MessageAttachment(imageStream)
-      msg.channel.send(reply, attachment)
+      msg.channel.send({ files: [attachment] })
     } catch (e) {
       msg.channel.send(
         `Chart could not be loaded for ${symbol}, please try later.`,
