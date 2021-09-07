@@ -16,7 +16,6 @@ client.on('ready', () => {
 })
 
 client.on('messageCreate', async (msg) => {
-  if (msg.content.startsWith('!chart ')) {
     const [command, symbol, ...args] = msg.content.split(' ')
     let timeframe, dateString
 
