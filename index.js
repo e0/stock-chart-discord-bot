@@ -13,35 +13,42 @@ const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 })
 
-const setupCron = () => {
-  cron.schedule(
-    '00 07 * * mon-fri',
-    async () => {
-      const earningsChannels = require('./earningsChannels.json')
-      if (!earningsChannels) return
+const clearCronJobs = async () => {
+  cron.getTasks().forEach((task) => task.stop())
+}
 
-      const earnings = await getDailyEarnings()
+const setupCron = async () => {
+  clearCronJobs()
 
-      client.guilds.cache.each((guild) => {
-        const matches = earningsChannels.filter(
-          (channel) => channel.guildId === guild.id,
-        )
-        if (!matches) return
+  const earningsChannels = require('./earningsChannels.json')
+  if (!earningsChannels) return
 
-        matches.forEach(({ channelId }) => {
-          const channel = guild.channels.cache.get(channelId)
-          if (!channel) return
+  const earnings = await getDailyEarnings()
 
+  client.guilds.cache.each((guild) => {
+    const matches = earningsChannels.filter(
+      (channel) => channel.guildId === guild.id,
+    )
+    if (!matches) return
+
+    matches.forEach(({ channelId }) => {
+      const channel = guild.channels.cache.get(channelId)
+      if (!channel) return
+
+      cron.schedule(
+        '00 07 * * mon-fri',
+        () => {
           console.log(`Sending earnings to ${channel.name} in ${guild.name}`)
           channel.send(earnings)
-        })
-      })
-    },
-    {
-      scheduled: true,
-      timezone: 'America/New_York',
-    },
-  )
+        },
+        {
+          name: `${guild.id}-${channelId}`,
+          scheduled: true,
+          timezone: 'America/New_York',
+        },
+      )
+    })
+  })
 }
 
 client.on('ready', () => {
@@ -56,6 +63,7 @@ client.on('messageCreate', async (msg) => {
 
   if (!serverWhitelist.includes(serverId)) {
     console.log(`Unauthorized attempt from ${serverId}`)
+    return
   }
 
   const lines = msg.content.split('\n')
@@ -68,6 +76,7 @@ client.on('messageCreate', async (msg) => {
         'This channel is now set up for daily earnings. The bot will post the daily earnings here every day at 7:00 AM EST (given that there are companies reporting).',
       )
     }
+    setupCron()
   }
 
   for (const line of lines) {
