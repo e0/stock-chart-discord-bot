@@ -49,12 +49,13 @@ client.on('ready', () => {
   setupCron()
 })
 
-const serverWhitelist = ['stock-chart-bot test server', 'Qullamaggies']
+// TODO: add white listed server ids here
+const serverWhitelist = []
 client.on('messageCreate', async (msg) => {
-  const serverName = msg.channel.guild.name
+  const serverId = msg.channel.guild.id
 
-  if (!serverWhitelist.includes(serverName)) {
-    console.log(`Unauthorized attempt from ${serverName}`)
+  if (!serverWhitelist.includes(serverId)) {
+    console.log(`Unauthorized attempt from ${serverId}`)
   }
 
   const lines = msg.content.split('\n')
