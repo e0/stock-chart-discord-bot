@@ -5,21 +5,69 @@ const {
   MessageAttachment,
   MessageEmbed,
 } = require('discord.js')
+const cron = require('node-cron')
 const { generateImage, getCachedImage } = require('./image')
+const { getDailyEarnings } = require('./earnings')
 
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 })
 
+const setupCron = () => {
+  cron.schedule(
+    '00 07 * * mon-fri',
+    async () => {
+      const earningsChannels = require('./earningsChannels.json')
+      if (!earningsChannels) return
+
+      const earnings = await getDailyEarnings()
+
+      client.guilds.cache.each((guild) => {
+        const matches = earningsChannels.filter(
+          (channel) => channel.guildId === guild.id,
+        )
+        if (!matches) return
+
+        matches.forEach(({ channelId }) => {
+          const channel = guild.channels.cache.get(channelId)
+          if (!channel) return
+
+          console.log(`Sending earnings to ${channel.name} in ${guild.name}`)
+          channel.send(earnings)
+        })
+      })
+    },
+    {
+      scheduled: true,
+      timezone: 'America/New_York',
+    },
+  )
+}
+
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
+  setupCron()
 })
 
+const serverWhitelist = ['stock-chart-bot test server', 'Qullamaggies']
 client.on('messageCreate', async (msg) => {
-    const [command, symbol, ...args] = msg.content.split(' ')
-    let timeframe, dateString
+  const serverName = msg.channel.guild.name
+
+  if (!serverWhitelist.includes(serverName)) {
+    console.log(`Unauthorized attempt from ${serverName}`)
+  }
 
   const lines = msg.content.split('\n')
+
+  if (lines[0].startsWith('!setup-daily-earnings')) {
+    const earnings = await getDailyEarnings(msg.guild.id, msg.channelId)
+    if (earnings) {
+      msg.channel.send(earnings)
+      msg.channel.send(
+        'This channel is now set up for daily earnings. The bot will post the daily earnings here every day at 7:00 AM EST (given that there are companies reporting).',
+      )
+    }
+  }
 
   for (const line of lines) {
     if (line.startsWith('!chart ')) {
