@@ -17,13 +17,11 @@ const clearCronJobs = async () => {
   cron.getTasks().forEach((task) => task.stop())
 }
 
-const setupCron = async () => {
+const setupCron = () => {
   clearCronJobs()
 
   const earningsChannels = require('./earningsChannels.json')
   if (!earningsChannels) return
-
-  const earnings = await getDailyEarnings()
 
   client.guilds.cache.each((guild) => {
     const matches = earningsChannels.filter(
@@ -38,6 +36,8 @@ const setupCron = async () => {
       cron.schedule(
         '00 07 * * mon-fri',
         () => {
+        async () => {
+          const earnings = await getDailyEarnings()
           console.log(`Sending earnings to ${channel.name} in ${guild.name}`)
           channel.send(earnings)
         },
