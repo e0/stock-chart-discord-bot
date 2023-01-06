@@ -35,7 +35,6 @@ const setupCron = () => {
 
       cron.schedule(
         '00 07 * * mon-fri',
-        () => {
         async () => {
           const earnings = await getDailyEarnings()
           console.log(`Sending earnings to ${channel.name} in ${guild.name}`)
