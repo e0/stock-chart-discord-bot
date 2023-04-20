@@ -5,7 +5,10 @@ const formatEarnings = (date, data) => {
   const earnings = data.reduce(
     (acc, curr) => {
       const { symbol, time } = curr
-      acc[time].push(symbol)
+      // only add if symbol does not include a dot
+      if (!symbol.includes('.')) {
+        acc[time].push(symbol)
+      }
       return acc
     },
     { bmo: [], amc: [] },
