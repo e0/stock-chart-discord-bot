@@ -5,8 +5,8 @@ const formatEarnings = (date, data) => {
   const earnings = data.reduce(
     (acc, curr) => {
       const { symbol, time } = curr
-      // only add if symbol does not include a dot
-      if (!symbol.includes('.')) {
+      // only add if symbol does not include a dot and the list does not already include the symbol
+      if (!symbol.includes('.') && !acc[time].includes(symbol)) {
         acc[time].push(symbol)
       }
       return acc
