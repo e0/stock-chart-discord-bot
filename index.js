@@ -17,6 +17,12 @@ const clearCronJobs = async () => {
   cron.getTasks().forEach((task) => task.stop())
 }
 
+const sendEarnings = (channel, lines) => {
+  for (const line of lines) {
+    channel.send(line)
+  }
+}
+
 const setupCron = () => {
   clearCronJobs()
 
@@ -70,7 +76,7 @@ client.on('messageCreate', async (msg) => {
   if (lines[0].startsWith('!setup-daily-earnings')) {
     const earnings = await getDailyEarnings(msg.guild.id, msg.channelId)
     if (earnings) {
-      msg.channel.send(earnings)
+      sendEarnings(msg.channel, earnings)
       msg.channel.send(
         'This channel is now set up for daily earnings. The bot will post the daily earnings here every day at 7:00 AM EST (given that there are companies reporting).',
       )

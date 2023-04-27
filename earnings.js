@@ -14,15 +14,15 @@ const formatEarnings = (date, data) => {
     { bmo: [], amc: [] },
   )
 
-  const text = `**Earnings ${date} from FMP**
+  const titleLine = `**Earnings ${date} from FMP**`
 
-***Before Market Open*** (${earnings.bmo.length})
-${earnings.bmo.sort().join(', ')}
+  const bmoLine = `***Before Market Open*** (${earnings.bmo.length})
+${earnings.bmo.sort().join(', ')}`
 
-***After Market Close*** (${earnings.amc.length})
+  const amcLine = `***After Market Close*** (${earnings.amc.length})
 ${earnings.amc.sort().join(', ')}`
 
-  return text
+  return [titleLine, bmoLine, amcLine]
 }
 
 const registerChannel = (guildId, channelId) => {
