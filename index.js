@@ -44,7 +44,7 @@ const setupCron = () => {
         async () => {
           const earnings = await getDailyEarnings()
           console.log(`Sending earnings to ${channel.name} in ${guild.name}`)
-          channel.send(earnings)
+          sendEarnings(channel, earnings)
         },
         {
           name: `${guild.id}-${channelId}`,
