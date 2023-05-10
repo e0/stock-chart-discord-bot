@@ -5,10 +5,12 @@ const formatEarnings = (date, data) => {
   const earnings = data.reduce(
     (acc, curr) => {
       const { symbol, time } = curr
-      // only add if symbol does not include a dot and the list does not already include the symbol
-      if (!symbol.includes('.') && !acc[time].includes(symbol)) {
+      // only add if symbol contains only letters and the list does not already include the symbol
+
+      if (/^[a-zA-Z]+$/.test(symbol) && !acc[time].includes(symbol)) {
         acc[time].push(symbol)
       }
+
       return acc
     },
     { bmo: [], amc: [] },
@@ -16,13 +18,23 @@ const formatEarnings = (date, data) => {
 
   const titleLine = `**Earnings ${date} from FMP**`
 
-  const bmoLine = `***Before Market Open*** (${earnings.bmo.length})
-${earnings.bmo.sort().join(', ')}`
+  const initialBmoLine = `***Before Market Open*** (${earnings.bmo.length})`
+  const sortedBmo = earnings.bmo.sort()
+  const bmoLines = []
 
-  const amcLine = `***After Market Close*** (${earnings.amc.length})
-${earnings.amc.sort().join(', ')}`
+  while (sortedBmo.length) {
+    bmoLines.push(sortedBmo.splice(0, 200).join(', '))
+  }
 
-  return [titleLine, bmoLine, amcLine]
+  const initialAmcLine = `***After Market Close*** (${earnings.amc.length})`
+  const sortedAmc = earnings.amc.sort()
+  const amcLines = []
+
+  while (sortedAmc.length) {
+    amcLines.push(sortedAmc.splice(0, 200).join(', '))
+  }
+
+  return [titleLine, initialBmoLine, ...bmoLines, initialAmcLine, ...amcLines]
 }
 
 const registerChannel = (guildId, channelId) => {
