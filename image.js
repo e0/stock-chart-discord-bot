@@ -23,6 +23,9 @@ const generateImage = async (symbol, timeframe, dateString) => {
   await page.goto(genUrl, {
     waitUntil: 'networkidle0',
   })
+  
+  await page.waitForSelector('img') // Make sure the image is loaded
+
   const imageData = await page.evaluate(
     'document.querySelector("img").getAttribute("src")',
   )
