@@ -7,6 +7,7 @@ const generateImage = async (symbol, timeframe, dateString) => {
   if (!browser) {
     browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      headless: 'new',
     })
   }
 
@@ -21,7 +22,7 @@ const generateImage = async (symbol, timeframe, dateString) => {
   }
 
   await page.goto(genUrl, {
-    waitUntil: ['networkidle0', 'domcontentloaded'],
+    waitUntil: 'networkidle0',
   })
 
   await page.waitForSelector('img') // Make sure the image is loaded
