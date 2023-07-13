@@ -16,6 +16,7 @@
     "prettier": "^2.8.8"
   },
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "install-with-firefox": "PUPPETEER_PRODUCT=firefox npm install puppeteer && npm install"
   }
 }
