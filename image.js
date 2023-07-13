@@ -6,7 +6,6 @@ let browser
 const generateImage = async (symbol, timeframe, dateString) => {
   if (!browser) {
     browser = await puppeteer.launch({
-      product: 'firefox',
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
       headless: 'new',
     })
