@@ -5,7 +5,7 @@ Discord bot for posting stock charts. Based on [stock-chart-generator](https://g
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/en/)
-- [pnpm](https://pnpm.io)
+- [Bun](http://bun.sh)
 
 ## Get started
 
@@ -20,7 +20,7 @@ FMP_API_URL=
 FMP_API_KEY=
 ```
 
-3. Run in dev: `pnpm dev`
+3. Run in dev: `bun run dev`
 4. For deployment, TBD.
 
 ## Commands

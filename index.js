@@ -1,16 +1,14 @@
-require('dotenv').config()
-const {
-  Client,
-  Intents,
-  MessageAttachment,
-  MessageEmbed,
-} = require('discord.js')
-const cron = require('node-cron')
-const { generateImage, getCachedImage } = require('./image')
-const { getDailyEarnings } = require('./earnings')
+import { Client, GatewayIntentBits, AttachmentBuilder } from 'discord.js'
+import cron from 'node-cron'
+import { generateImage, getCachedImage } from './image'
+import { getDailyEarnings } from './earnings'
 
 const client = new Client({
-  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
 })
 
 const clearCronJobs = async () => {
@@ -86,7 +84,7 @@ client.on('messageCreate', async (msg) => {
 
   for (const line of lines) {
     if (line.startsWith('!chart ')) {
-      const [command, symbol, ...args] = line.split(' ')
+      const [, symbol, ...args] = line.split(' ')
       let timeframe, dateString
 
       if (
@@ -130,14 +128,18 @@ client.on('messageCreate', async (msg) => {
           imageStream = await generateImage(symbol, timeframe, dateString)
         }
 
-        const attachment = new MessageAttachment(imageStream)
-        msg.channel.send({ files: [attachment] })
+        const attachment = new AttachmentBuilder(imageStream, {
+          name: 'chart.png',
+        })
+        return msg.channel.send({
+          files: [attachment],
+        })
       } catch (e) {
-        msg.channel.send(
+        console.error(e)
+
+        return msg.channel.send(
           `Chart could not be loaded for ${symbol}, please try later.`,
         )
-
-        console.error(e)
       }
     }
   }
