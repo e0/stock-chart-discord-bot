@@ -5,6 +5,7 @@ const blacklist = [
   'ADX',
   'ADXS',
   'AGFY',
+  'AFB',
   'AHPIQ',
   'AIAD',
   'AKOM',
