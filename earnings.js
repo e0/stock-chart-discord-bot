@@ -1,5 +1,5 @@
-const fetch = require('node-fetch')
-const fs = require('fs')
+import { blacklist } from './earningsBlacklist'
+import { DateTime } from 'luxon'
 
 const formatEarnings = (date, data) => {
   const earnings = data.reduce(
@@ -7,7 +7,11 @@ const formatEarnings = (date, data) => {
       const { symbol, time } = curr
       // only add if symbol contains only letters and the list does not already include the symbol
 
-      if (/^[a-zA-Z]+$/.test(symbol) && !acc[time].includes(symbol)) {
+      if (
+        /^[a-zA-Z]+$/.test(symbol) &&
+        !acc[time].includes(symbol) &&
+        !blacklist.includes(symbol)
+      ) {
         acc[time].push(symbol)
       }
 
@@ -16,7 +20,7 @@ const formatEarnings = (date, data) => {
     { bmo: [], amc: [] },
   )
 
-  const titleLine = `**Earnings ${date} from FMP**`
+  const titleLine = `**Earnings ${date} from FMP (filtered)**`
 
   const initialBmoLine = `***Before Market Open*** (${earnings.bmo.length})`
   const sortedBmo = earnings.bmo.sort()
@@ -38,8 +42,9 @@ const formatEarnings = (date, data) => {
 }
 
 const registerChannel = (guildId, channelId) => {
-  if (!fs.existsSync('./earningsChannels.json')) {
-    fs.writeFileSync('./earningsChannels.json', JSON.stringify([]))
+  const channelsFile = Bun.file('earningsChannels.json')
+  if (!channelsFile.size) {
+    Bun.write('earningsChannels.json', JSON.stringify([]))
   }
   const earningsChannels = require('./earningsChannels.json')
 
@@ -52,8 +57,8 @@ const registerChannel = (guildId, channelId) => {
       guildId,
       channelId,
     })
-    fs.writeFileSync(
-      './earningsChannels.json',
+    Bun.write(
+      'earningsChannels.json',
       JSON.stringify(earningsChannels, null, 2),
     )
   }
@@ -64,9 +69,7 @@ const getDailyEarnings = async (guildId, channelId) => {
     registerChannel(guildId, channelId)
   }
 
-  const date = new Date().toLocaleDateString('en-CA', {
-    timeZone: 'America/New_York',
-  })
+  const date = DateTime.now().setZone('America/New_York').toFormat('yyyy-MM-dd')
 
   const url = `${process.env.FMP_API_URL}/v3/earning_calendar?from=${date}&to=${date}&apikey=${process.env.FMP_API_KEY}`
 
@@ -80,4 +83,4 @@ const getDailyEarnings = async (guildId, channelId) => {
   return null
 }
 
-module.exports = { getDailyEarnings }
+export { getDailyEarnings }

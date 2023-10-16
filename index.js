@@ -24,34 +24,38 @@ const sendEarnings = (channel, lines) => {
 const setupCron = () => {
   clearCronJobs()
 
-  const earningsChannels = require('./earningsChannels.json')
-  if (!earningsChannels) return
+  try {
+    const earningsChannels = require('./earningsChannels.json')
+    if (!earningsChannels) return
 
-  client.guilds.cache.each((guild) => {
-    const matches = earningsChannels.filter(
-      (channel) => channel.guildId === guild.id,
-    )
-    if (!matches) return
-
-    matches.forEach(({ channelId }) => {
-      const channel = guild.channels.cache.get(channelId)
-      if (!channel) return
-
-      cron.schedule(
-        '00 07 * * mon-fri',
-        async () => {
-          const earnings = await getDailyEarnings()
-          console.log(`Sending earnings to ${channel.name} in ${guild.name}`)
-          sendEarnings(channel, earnings)
-        },
-        {
-          name: `${guild.id}-${channelId}`,
-          scheduled: true,
-          timezone: 'America/New_York',
-        },
+    client.guilds.cache.each((guild) => {
+      const matches = earningsChannels.filter(
+        (channel) => channel.guildId === guild.id,
       )
+      if (!matches) return
+
+      matches.forEach(({ channelId }) => {
+        const channel = guild.channels.cache.get(channelId)
+        if (!channel) return
+
+        cron.schedule(
+          '00 07 * * mon-fri',
+          async () => {
+            const earnings = await getDailyEarnings()
+            console.log(`Sending earnings to ${channel.name} in ${guild.name}`)
+            sendEarnings(channel, earnings)
+          },
+          {
+            name: `${guild.id}-${channelId}`,
+            scheduled: true,
+            timezone: 'America/New_York',
+          },
+        )
+      })
     })
-  })
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 client.on('ready', () => {
